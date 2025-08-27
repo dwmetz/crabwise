@@ -6,7 +6,7 @@ use std::path::{PathBuf};
 use std::time::Instant;
 #[cfg(unix)]
 use std::os::unix::fs::OpenOptionsExt;
-#[cfg(unix)]
+#[cfg(target_os = "macos")]
 use std::os::fd::AsRawFd;
 #[cfg(target_os = "windows")]
 use std::os::windows::fs::OpenOptionsExt as WinOpenOptionsExt;
@@ -115,6 +115,7 @@ fn set_nocache(file: &File) {
     }
 }
 
+#[allow(dead_code)]
 #[cfg(not(target_os = "macos"))]
 fn set_nocache(_file: &File) {}
 
