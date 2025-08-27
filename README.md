@@ -49,10 +49,21 @@ dual 90 deg cable, usb-c hub   |  293.77 Mbps |  298.57 Mbps | 2025-08-27 11:29:
 dual 90 cable, to mac          |  327.16 Mbps |  331.88 Mbps | 2025-08-27 11:31:02
 coil cable, to mac             |  324.74 Mbps |  330.94 Mbps | 2025-08-27 11:32:53
 ```
+---
 
+## Installation
+
+Clone the repository and build with Cargo:
+
+```bash
+git clone https://github.com/dwmetz/crabwise.git
+cd crabwise
+cargo build --release
+```
 ---
 
 ## Usage
+
 
 ```bash
 # Run Crabwise
