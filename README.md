@@ -4,7 +4,7 @@
 
 Crabwise is a lightweight Rust-based tool that benchmarks the true read/write speeds of USB devices. It’s designed with digital forensics and investigative workflows in mind, where reliable and fast devices are critical for evidence capture, tool processing, and virtual machine support.
 
-![Crabwise Screenshot](images/crabwise.png)
+![Crabwise Screenshot](images/screenshot.png)
 
 ---
 
