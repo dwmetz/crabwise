@@ -298,6 +298,8 @@ fn main() -> std::io::Result<()> {
         );
         let mut f = OpenOptions::new().create(true).append(true).open(&log_path)?;
         f.write_all(line.as_bytes())?;
+        f.flush()?;
+        f.sync_all()?;
         println!("Saved log entry to {}", log_path.display());
         if let Ok(contents) = std::fs::read_to_string(&log_path) {
             println!("\n=== crabwise.log ===\n{}", contents);
