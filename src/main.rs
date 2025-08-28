@@ -12,6 +12,7 @@ use std::os::fd::AsRawFd;
 use std::os::windows::fs::OpenOptionsExt as WinOpenOptionsExt;
 use sysinfo::Disks;
 use chrono::Local;
+use once_cell::sync::Lazy;
 
 #[cfg(target_os = "linux")]
 static LINUX_MEDIA_DIRS: Lazy<Vec<&'static str>> = Lazy::new(|| vec!["/media", "/run/media"]);
