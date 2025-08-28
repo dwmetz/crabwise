@@ -11,7 +11,6 @@ use std::os::fd::AsRawFd;
 #[cfg(target_os = "windows")]
 use std::os::windows::fs::OpenOptionsExt as WinOpenOptionsExt;
 use sysinfo::Disks;
-use once_cell::sync::Lazy;
 use chrono::Local;
 
 #[cfg(target_os = "linux")]
@@ -56,22 +55,6 @@ fn prompt_line(prompt: &str) -> io::Result<String> {
     let mut line = String::new();
     io::stdin().read_line(&mut line)?;
     Ok(line.trim().to_string())
-}
-
-fn is_probable_usb_mount(p: &std::path::Path) -> bool {
-    #[cfg(target_os = "macos")]
-    {
-        MAC_MEDIA_DIRS.iter().any(|root| p.starts_with(root))
-    }
-    #[cfg(target_os = "linux")]
-    {
-        LINUX_MEDIA_DIRS.iter().any(|root| p.starts_with(root))
-    }
-    #[cfg(target_os = "windows")]
-    {
-        // On Windows, sysinfo gives us Removable disks; fallback to drive letters otherwise
-        true
-    }
 }
 
 #[derive(Parser, Debug)]
@@ -125,7 +108,7 @@ fn open_write(path: &std::path::Path, direct: bool) -> std::io::Result<File> {
         use windows_sys::Win32::Storage::FileSystem::{FILE_FLAG_WRITE_THROUGH};
         let mut opts = std::fs::OpenOptions::new();
         opts.create(true).write(true).truncate(true);
-        if direct { opts.custom_flags(FILE_FLAG_WRITE_THROUGH as i32); }
+        if direct { opts.custom_flags(FILE_FLAG_WRITE_THROUGH as u32); } // Fix type
         let f = opts.open(path)?;
         Ok(f)
     }
@@ -134,7 +117,6 @@ fn open_write(path: &std::path::Path, direct: bool) -> std::io::Result<File> {
         let mut opts = std::fs::OpenOptions::new();
         opts.create(true).write(true).truncate(true);
         if direct {
-            // O_SYNC is widely supported; O_DIRECT only on Linux and requires alignment. We keep O_SYNC here for safety.
             opts.custom_flags(libc::O_SYNC);
         }
         let f = opts.open(path)?;
@@ -150,7 +132,7 @@ fn open_read(path: &std::path::Path, direct: bool) -> std::io::Result<File> {
         use windows_sys::Win32::Storage::FileSystem::{FILE_FLAG_WRITE_THROUGH};
         let mut opts = std::fs::OpenOptions::new();
         opts.read(true);
-        if direct { opts.custom_flags(FILE_FLAG_WRITE_THROUGH as i32); }
+        if direct { opts.custom_flags(FILE_FLAG_WRITE_THROUGH as u32); } // Fix type
         let f = opts.open(path)?;
         Ok(f)
     }
@@ -174,9 +156,19 @@ fn choose_target_dir() -> io::Result<PathBuf> {
     for d in disks.list() {
         let mount = d.mount_point().to_path_buf();
         let name = d.name().to_string_lossy().to_string();
-        let is_removable = d.is_removable();
-        if is_removable || is_probable_usb_mount(&mount) {
-            candidates.push((format!("{} — {}", name, mount.display()), mount));
+        #[cfg(target_os = "windows")]
+        {
+            // Omit C: drive, include all others
+            let letter = mount.display().to_string().chars().next().unwrap_or('C');
+            if letter != 'C' {
+                candidates.push((format!("{} — {}", name, mount.display()), mount.clone()));
+            }
+        }
+        #[cfg(not(target_os = "windows"))]
+        {
+            if d.is_removable() {
+                candidates.push((format!("{} — {}", name, mount.display()), mount.clone()));
+            }
         }
     }
 
