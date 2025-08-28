@@ -12,7 +12,6 @@ use std::os::fd::AsRawFd;
 use std::os::windows::fs::OpenOptionsExt as WinOpenOptionsExt;
 use sysinfo::Disks;
 use chrono::Local;
-use once_cell::sync::Lazy;
 
 #[cfg(target_os = "macos")]
 static MAC_MEDIA_DIRS: Lazy<Vec<&'static str>> = Lazy::new(|| vec!["/Volumes"]);
